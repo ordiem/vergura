@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function ReportActions({ title }: { title: string }) {
+export function ThesisActions({ title }: { title: string }) {
   const [copied, setCopied] = useState(false);
 
   const copyLink = async () => {

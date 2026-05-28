@@ -30,7 +30,7 @@ export function ConfidenceTag({ value }: { value: string }) {
   );
 }
 
-export function ResearchCard({
+export function ThesisCard({
   report,
   featured = false,
 }: {
@@ -42,12 +42,12 @@ export function ResearchCard({
   if (featured) {
     return (
       <Link
-        href={`/research/${report.slug}`}
+        href={`/theses/${report.slug}`}
         className="group relative grid grid-cols-1 overflow-hidden border border-line bg-charcoal/60 transition-colors duration-500 hover:border-line-strong md:grid-cols-2"
       >
         <div className="relative flex min-h-[18rem] items-center justify-center overflow-hidden border-b border-line bg-ink/60 p-8 grid-texture-fine md:border-b-0 md:border-r">
           <div className="absolute left-4 top-4">
-            <span className="label text-gold">Featured Report</span>
+            <span className="label text-gold">Featured Thesis</span>
           </div>
           <div className="h-44 w-full max-w-sm opacity-90 transition-opacity duration-500 group-hover:opacity-100">
             <Chart kind={report.chart} />
@@ -84,7 +84,7 @@ export function ResearchCard({
 
   return (
     <Link
-      href={`/research/${report.slug}`}
+      href={`/theses/${report.slug}`}
       className="group flex h-full flex-col justify-between border border-line bg-charcoal/40 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-line-strong hover:bg-charcoal/70"
     >
       <div>

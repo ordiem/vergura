@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Reveal } from "@/components/Reveal";
 import { Chart } from "@/components/Charts";
-import { ResearchCard, AssetTag } from "@/components/ResearchCard";
-import { ReportActions } from "@/components/research/ReportActions";
+import { ThesisCard, AssetTag } from "@/components/blog/ThesisCard";
+import { ThesisActions } from "@/components/blog/ThesisActions";
 import {
   authorById,
   formatDateLong,
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const report = reportBySlug(slug);
-  if (!report) return { title: "Report not found" };
+  if (!report) return { title: "Thesis not found" };
   return {
     title: report.title,
     description: report.summary,
@@ -32,7 +32,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ReportPage({
+export default async function ThesisPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -46,20 +46,19 @@ export default async function ReportPage({
 
   return (
     <article className="pt-[4.5rem]">
-      {/* Report cover / header */}
+      {/* Thesis cover / header */}
       <header className="relative overflow-hidden border-b border-line">
-        <div className="pointer-events-none absolute inset-0 grid-texture opacity-30" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_60%_at_70%_30%,rgba(191,164,106,0.06),transparent_70%)]" />
         <div className="relative mx-auto max-w-3xl px-6 py-16 lg:py-24">
           <Reveal>
             <Link
-              href="/research"
+              href="/theses"
               className="group inline-flex items-center gap-2 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-silver transition-colors hover:text-champagne"
             >
               <span className="transition-transform duration-300 group-hover:-translate-x-1">
                 ←
               </span>
-              Research Library
+              All Theses
             </Link>
           </Reveal>
 
@@ -151,7 +150,7 @@ export default async function ReportPage({
           {report.body.map((section, i) => (
             <Reveal as="div" key={i} className="mt-12 first:mt-0">
               <h2 className="font-serif text-[1.7rem] leading-tight text-ivory">
-                <span className="mr-3 font-mono text-[0.85rem] align-middle text-gold">
+                <span className="mr-3 align-middle font-mono text-[0.85rem] text-gold">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 {section.heading}
@@ -169,7 +168,6 @@ export default async function ReportPage({
                 </blockquote>
               )}
 
-              {/* Insert a figure after the first body section */}
               {report.figures[i] && (
                 <figure className="my-10 border border-line bg-charcoal/40 p-6">
                   <div className="mb-4 flex items-center justify-between">
@@ -192,7 +190,7 @@ export default async function ReportPage({
           ))}
         </section>
 
-        {/* Footnote / methodology */}
+        {/* Notes */}
         <Reveal as="section" className="mt-16 border-t border-line pt-8">
           <h2 className="label mb-3 text-stone">Notes</h2>
           <p className="font-mono text-[0.72rem] leading-relaxed text-silver">
@@ -214,22 +212,22 @@ export default async function ReportPage({
 
         {/* Actions */}
         <Reveal as="section" className="mt-10">
-          <ReportActions title={report.title} />
+          <ThesisActions title={report.title} />
         </Reveal>
       </div>
 
-      {/* Related research */}
+      {/* Related theses */}
       <section className="border-t border-line py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-10">
           <div className="mb-10 flex items-center gap-3">
             <span className="font-mono text-[0.7rem] tracking-[0.2em] text-gold">
               ▦
             </span>
-            <h2 className="label text-stone">Related Research</h2>
+            <h2 className="label text-stone">Related Theses</h2>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((r) => (
-              <ResearchCard key={r.slug} report={r} />
+              <ThesisCard key={r.slug} report={r} />
             ))}
           </div>
         </div>

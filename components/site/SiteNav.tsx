@@ -5,9 +5,8 @@ import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 
 const links = [
-  { label: "Research", href: "/research" },
+  { label: "Theses", href: "/theses" },
   { label: "Pillars", href: "/#pillars" },
-  { label: "Platform", href: "/#platform" },
   { label: "Approach", href: "/#approach" },
 ];
 
@@ -43,10 +42,10 @@ export function SiteNav() {
             </Link>
           ))}
           <Link
-            href="/platform"
+            href="mailto:contact@vergura.investment"
             className="border border-[rgba(191,164,106,0.5)] px-5 py-2.5 font-sans text-[0.75rem] uppercase tracking-[0.16em] text-champagne transition-all duration-300 hover:border-gold hover:bg-[rgba(191,164,106,0.08)]"
           >
-            Access Platform
+            Get in Contact ↗
           </Link>
         </div>
         <button
@@ -81,11 +80,11 @@ export function SiteNav() {
               </Link>
             ))}
             <Link
-              href="/platform"
+              href="mailto:contact@vergura.investment"
               onClick={() => setOpen(false)}
               className="mt-2 border border-[rgba(191,164,106,0.5)] px-5 py-3 text-center font-sans text-[0.75rem] uppercase tracking-[0.16em] text-champagne"
             >
-              Access Platform
+              Get in Contact ↗
             </Link>
           </div>
         </div>

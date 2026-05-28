@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import type { AssetClass, Report } from "@/lib/content";
 import { assetClasses } from "@/lib/content";
-import { ResearchCard } from "@/components/ResearchCard";
+import { ThesisCard } from "@/components/blog/ThesisCard";
 
 type Sort = "latest" | "read";
 
-export function ArchiveExplorer({
+export function ThesisExplorer({
   reports,
   initialAsset,
   initialCategory,
@@ -151,7 +151,7 @@ export function ArchiveExplorer({
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 pb-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r) => (
-            <ResearchCard key={r.slug} report={r} />
+            <ThesisCard key={r.slug} report={r} />
           ))}
         </div>
       ) : (

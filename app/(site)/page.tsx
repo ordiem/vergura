@@ -1,18 +1,16 @@
 import { Hero } from "@/components/site/Hero";
-import { LatestResearch } from "@/components/site/LatestResearch";
+import { Sectors } from "@/components/site/Sectors";
 import { Pillars } from "@/components/site/Pillars";
-import { DataSystems } from "@/components/site/DataSystems";
-import { PlatformPreview } from "@/components/site/PlatformPreview";
+import { LatestTheses } from "@/components/site/LatestTheses";
 import { ApproachCTA } from "@/components/site/ApproachCTA";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
-      <LatestResearch />
+      <Sectors />
       <Pillars />
-      <DataSystems />
-      <PlatformPreview />
+      <LatestTheses />
       <ApproachCTA />
     </>
   );

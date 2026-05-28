@@ -32,19 +32,19 @@ export function ApproachCTA() {
         <Reveal delay={240}>
           <div className="mt-11 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/research"
+              href="/theses"
               className="group inline-flex items-center justify-center gap-2 bg-ivory px-7 py-3.5 font-sans text-[0.8rem] uppercase tracking-[0.16em] text-ink transition-colors duration-300 hover:bg-champagne"
             >
-              Explore Reports
+              Read Theses
               <span className="transition-transform duration-300 group-hover:translate-x-1">
                 →
               </span>
             </Link>
             <Link
-              href="/platform"
+              href="mailto:contact@vergura.investment"
               className="inline-flex items-center justify-center border border-[rgba(191,164,106,0.5)] px-7 py-3.5 font-sans text-[0.8rem] uppercase tracking-[0.16em] text-champagne transition-all duration-300 hover:border-gold hover:bg-[rgba(191,164,106,0.07)]"
             >
-              Access Intelligence
+              Get in Contact ↗
             </Link>
           </div>
         </Reveal>

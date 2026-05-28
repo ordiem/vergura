@@ -19,10 +19,10 @@ export default function NotFound() {
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            href="/research"
+            href="/theses"
             className="bg-ivory px-7 py-3.5 font-sans text-[0.8rem] uppercase tracking-[0.16em] text-ink transition-colors hover:bg-champagne"
           >
-            Research Library
+            Read Theses
           </Link>
           <Link
             href="/"
