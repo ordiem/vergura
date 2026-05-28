@@ -57,7 +57,17 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${fraunces.variable} ${inter.variable} ${ibmMono.variable}`}
     >
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {/* Enable scroll-reveal only when JS is available, so content is
+            never permanently hidden for print, crawlers, or no-JS. Runs
+            before paint to avoid a flash of pre-hidden content. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('reveal-ready')",
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
