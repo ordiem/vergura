@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Emblem } from "@/components/Logo";
+import { Wordmark } from "@/components/Logo";
 
 export function SiteFooter() {
   return (
@@ -9,10 +9,7 @@ export function SiteFooter() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_45%_60%_at_50%_45%,rgba(191,164,106,0.06),transparent_70%)]" />
 
         <div className="relative flex flex-col items-center">
-          <Emblem className="h-10 w-10 text-ivory" />
-          <span className="mt-5 font-serif text-[2rem] tracking-[0.04em] text-ivory">
-            Vergura
-          </span>
+          <Wordmark className="text-[2.4rem]" />
 
           <address className="mt-8 font-mono text-[0.72rem] not-italic uppercase leading-relaxed tracking-[0.16em] text-silver">
             Vergura Investment AG

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Emblem } from "@/components/Logo";
+import { Wordmark } from "@/components/Logo";
 
 export default function NotFound() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center">
       <div className="pointer-events-none absolute inset-0 grid-texture opacity-40" />
       <div className="relative">
-        <Emblem className="mx-auto h-10 w-10 text-ivory" />
+        <Wordmark className="mx-auto block text-[2rem]" />
         <div className="mt-8 font-mono text-[0.7rem] uppercase tracking-[0.24em] text-gold">
           Error 404
         </div>
