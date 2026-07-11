@@ -16,6 +16,14 @@
   --color-champagne: #d8c9a3;
   --color-bronze: #8c6f3f;
 
+  /* Capital landing palette — venetian: warm paper, burnt red, deep maroon */
+  --color-paper: #f7f6ee;
+  --color-cream: #eeede4;
+  --color-venetian: #dd3300;
+  --color-maroon: #7a1d14;
+  --color-inkred: #2a0906;
+  --color-lagoon: #0e2942;
+
   /* Hairlines */
   --color-line: rgba(244, 241, 234, 0.1);
   --color-line-strong: rgba(244, 241, 234, 0.18);
