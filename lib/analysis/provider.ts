@@ -1,5 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
+import { kieChat, KieAuthError } from "./kie-chat";
 import {
   analysisPrompt,
   conceptPrompt,
@@ -23,13 +24,38 @@ import {
 
 const MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5";
 
-export const isAnalysisConfigured = () => Boolean(process.env.ANTHROPIC_API_KEY);
-export const isAnalysisMock = () =>
-  process.env.ANALYSIS_DRIVER === "mock" || !process.env.ANTHROPIC_API_KEY;
+export type AnalysisDriver = "anthropic" | "kie" | "mock";
 
-export const analysisModelName = () => (isAnalysisMock() ? "mock" : MODEL);
+/**
+ * Explicit ANALYSIS_DRIVER wins. Otherwise prefer a direct Anthropic key,
+ * then KIE (which needs Claude enabled on the key), then the mock.
+ *
+ * KIE is not auto-selected on the KIE key alone: that key is commonly not
+ * entitled to Claude, and silently routing there turns a config gap into a
+ * runtime 401 mid-workflow.
+ */
+export function analysisDriver(): AnalysisDriver {
+  const explicit = process.env.ANALYSIS_DRIVER;
+  if (explicit === "anthropic" || explicit === "kie" || explicit === "mock") {
+    return explicit;
+  }
+  if (process.env.ANTHROPIC_API_KEY) return "anthropic";
+  return "mock";
+}
+
+export const isAnalysisConfigured = () => analysisDriver() !== "mock";
+export const isAnalysisMock = () => analysisDriver() === "mock";
+
+export const analysisModelName = () => {
+  const d = analysisDriver();
+  if (d === "mock") return "mock";
+  if (d === "kie") return `${process.env.KIE_ANALYSIS_MODEL ?? "claude-sonnet-5"} (via KIE)`;
+  return MODEL;
+};
 
 class RefusalError extends Error {}
+
+export { KieAuthError };
 
 function client() {
   return new Anthropic(); // reads ANTHROPIC_API_KEY from the environment
@@ -125,7 +151,16 @@ async function ask(
 
 /** Reads a reference ad: its copy, its big idea, and why it converts. */
 export async function analyseReference(imageUrl: string): Promise<AnalysisResult> {
-  if (isAnalysisMock()) return mockAnalysis(imageUrl);
+  const driver = analysisDriver();
+  if (driver === "mock") return mockAnalysis(imageUrl);
+
+  if (driver === "kie") {
+    const raw = await kieChat({
+      prompt: `${analysisPrompt()}\n\nReturn ONLY the JSON object.`,
+      imageUrls: [imageUrl],
+    });
+    return parseJsonLoose<AnalysisResult>(raw);
+  }
 
   const text = await ask(
     [
@@ -146,7 +181,20 @@ export async function draftConcepts(args: {
   productImageUrls: string[];
   variantCount: number;
 }): Promise<ConceptDraft[]> {
-  if (isAnalysisMock()) return mockConcepts(args);
+  const driver = analysisDriver();
+  if (driver === "mock") return mockConcepts(args);
+
+  if (driver === "kie") {
+    const raw = await kieChat({
+      prompt: `${conceptPrompt(args)}\n\nReturn ONLY a JSON object of the form {"concepts": [...]}.`,
+      imageUrls: args.productImageUrls.slice(0, 8),
+    });
+    const p = parseJsonLoose<{ concepts: ConceptDraft[] }>(raw);
+    return (p.concepts ?? []).map((c) => ({
+      ...c,
+      visual_prompt: stripTextDirectives(c.visual_prompt ?? ""),
+    }));
+  }
 
   const content: Anthropic.ContentBlockParam[] = [
     ...args.productImageUrls.slice(0, 8).map(
