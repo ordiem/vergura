@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --experimental-strip-types --no-warnings --import ./scripts/alias-register.mjs scripts/test-compose.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
+    "kie:smoke": "node scripts/kie-smoke.mjs"
   },
   "dependencies": {
     "next": "16.2.6",
+    "postgres": "^3.4.9",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
