@@ -10,10 +10,12 @@
     "test": "node --experimental-strip-types --no-warnings --import ./scripts/alias-register.mjs scripts/test-compose.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "kie:smoke": "node scripts/kie-smoke.mjs",
-    "kie:claude-probe": "node scripts/kie-claude-probe.mjs"
+    "kie:claude-probe": "node scripts/kie-claude-probe.mjs",
+    "db:migrate:http": "node scripts/migrate-http.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
+    "@neondatabase/serverless": "^1.1.0",
     "@vercel/blob": "^2.6.1",
     "next": "16.2.6",
     "postgres": "^3.4.9",
