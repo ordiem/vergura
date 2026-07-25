@@ -43,12 +43,25 @@ const MODELS = [
 
 function classify(code, msg) {
   if (code === 401) return ["NOT ENTITLED", "exists — enable Claude on this key at kie.ai/api-key"];
+  if (/record is null/i.test(msg))
+    return ["KIE-SIDE FAULT", "entitled, but KIE fails the job regardless of payload — report to KIE support"];
   if (/not supported/i.test(msg)) return ["NO SUCH SLUG", "this model id is not on KIE"];
   if (/model is empty/i.test(msg)) return ["SHAPE ERROR", "slug exists; input.model missing"];
   return ["OTHER", msg];
 }
 
-console.log(`\nProbing Claude on KIE  (${BASE})\n`);
+async function settle(taskId) {
+  const deadline = Date.now() + 90_000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 4000));
+    const r = await fetch(`${BASE}/api/v1/jobs/recordInfo?taskId=${taskId}`, { headers });
+    const d = (await r.json().catch(() => ({})))?.data;
+    if (d?.state === "success" || d?.state === "fail") return d;
+  }
+  return { state: "fail", failMsg: "timed out" };
+}
+
+console.log(`\nProbing Claude on KIE  (${BASE})  — creates a task per model and waits for it to settle\n`);
 let usable = null;
 
 for (const model of MODELS) {
@@ -62,8 +75,16 @@ for (const model of MODELS) {
   });
   const body = await res.json().catch(() => ({}));
   if (body?.data?.taskId) {
-    console.log(`  ✓ ${model.padEnd(20)} AVAILABLE  taskId=${body.data.taskId}`);
-    usable ??= model;
+    // Creation succeeding is not enough — Claude on KIE has been observed
+    // accepting a task and then failing it with 422 "record is null".
+    const outcome = await settle(body.data.taskId);
+    if (outcome.state === "success") {
+      console.log(`  ✓ ${model.padEnd(20)} WORKING    taskId=${body.data.taskId}`);
+      usable ??= model;
+    } else {
+      const [tag, note] = classify(Number(outcome.failCode), String(outcome.failMsg ?? ""));
+      console.log(`  ✗ ${model.padEnd(20)} ${tag.padEnd(15)} ${note}`);
+    }
     continue;
   }
   const [tag, note] = classify(body?.code, body?.msg ?? "");
