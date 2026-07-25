@@ -97,7 +97,10 @@ export async function getTask(taskId: string): Promise<KieTask> {
     progress: Math.max(0, Math.min(100, num(d.progress, state === "success" ? 100 : 0))),
     urls,
     creditsConsumed: num(d.creditsConsumed, 0),
-    costTimeMs: d.costTime == null ? null : num(d.costTime, 0),
+    // costTime is SECONDS despite the docs implying milliseconds. Measured on
+    // a live nano-banana-2 task: costTime=30 while
+    // completeTime-createTime=30849ms.
+    costTimeMs: d.costTime == null ? null : num(d.costTime, 0) * 1000,
     failCode: d.failCode ? String(d.failCode) : null,
     failMsg: d.failMsg ? String(d.failMsg) : null,
     raw: d,

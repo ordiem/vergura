@@ -65,7 +65,8 @@ export const IMAGE_MODELS: ModelDef[] = [
     label: "Google Nano Banana 2",
     kind: "image",
     transport: "jobs",
-    estCredits: 1,
+    // Measured live: one 1K image consumed 8.0 credits.
+    estCredits: 8,
     docs: "https://docs.kie.ai/market/google/nanobanana2",
     fields: [
       { key: "prompt", label: "Prompt", type: "text", max: 20000, required: true },
