@@ -44,10 +44,10 @@ export default async function LibraryPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {assets.map((a) => (
               <div key={a.id} className="panel overflow-hidden">
-                <a href={a.url} target="_blank" rel="noreferrer" className="block">
+                <a href={a.mirror_url ?? a.url} target="_blank" rel="noreferrer" className="block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={a.url}
+                    src={a.mirror_url ?? a.url}
                     alt={a.gen.resolved_prompt.slice(0, 120)}
                     className="aspect-square w-full bg-base object-cover"
                   />

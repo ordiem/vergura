@@ -1,6 +1,7 @@
 import "server-only";
 import { compose, estimateCredits, ComposeError } from "./compose";
 import { createTask, getTask } from "@/lib/kie/client";
+import { mirrorAsset, isStorageConfigured } from "@/lib/storage/blob";
 import {
   applyTaskResult,
   attachTaskId,
@@ -10,6 +11,7 @@ import {
   getPreset,
   markFailed,
   pendingGenerations,
+  setAssetMirror,
   type GenerationWithAssets,
 } from "@/lib/db/queries";
 
@@ -87,7 +89,7 @@ export async function submitGeneration(args: {
   return { id: row.id, rejectedKeys: composed.rejectedKeys, estCredits: est };
 }
 
-/** Polls KIE for one generation and persists the result. */
+/** Polls KIE for one generation, persists the result, then mirrors its assets. */
 export async function refreshGeneration(id: string): Promise<GenerationWithAssets | null> {
   const gen = await getGeneration(id);
   if (!gen?.task_id) return gen;
@@ -95,7 +97,30 @@ export async function refreshGeneration(id: string): Promise<GenerationWithAsset
 
   const task = await getTask(gen.task_id);
   await applyTaskResult(id, task);
+  if (task.state === "success") await mirrorGenerationAssets(id);
   return getGeneration(id);
+}
+
+/**
+ * Copies each asset onto our own storage. KIE serves results from
+ * tempfile.aiquickdraw.com, which expires — without this the library and any
+ * exported batch eventually point at dead URLs. Best-effort by design: a
+ * failed mirror leaves the original URL in place rather than failing the job.
+ */
+export async function mirrorGenerationAssets(id: string) {
+  if (!isStorageConfigured()) return;
+
+  const gen = await getGeneration(id);
+  if (!gen) return;
+
+  await Promise.allSettled(
+    gen.assets
+      .filter((a) => !a.mirror_url)
+      .map(async (a) => {
+        const url = await mirrorAsset(a.url, id, a.idx);
+        if (url) await setAssetMirror(a.id, url);
+      })
+  );
 }
 
 /** Sweeps every in-flight job. Called by the queue view and the cron route. */
@@ -106,6 +131,7 @@ export async function refreshPending() {
       if (!g.task_id) return;
       const task = await getTask(g.task_id);
       await applyTaskResult(g.id, task);
+      if (task.state === "success") await mirrorGenerationAssets(g.id);
     })
   );
   return {

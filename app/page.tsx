@@ -98,7 +98,7 @@ export default async function OverviewPage() {
                 <div className="h-10 w-10 shrink-0 overflow-hidden rounded border border-line bg-base">
                   {g.assets[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={g.assets[0].url} alt="" className="h-full w-full object-cover" />
+                    <img src={g.assets[0].mirror_url ?? g.assets[0].url} alt="" className="h-full w-full object-cover" />
                   ) : null}
                 </div>
                 <span className="flex-1 truncate text-sm text-muted">{g.resolved_prompt}</span>

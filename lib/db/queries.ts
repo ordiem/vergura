@@ -56,7 +56,7 @@ export type Generation = {
 };
 
 export type GenerationWithAssets = Generation & {
-  assets: { id: string; url: string; idx: number }[];
+  assets: { id: string; url: string; idx: number; mirror_url: string | null }[];
   campaign_name: string | null;
   preset_name: string | null;
 };
@@ -189,7 +189,7 @@ export async function listGenerations(filter?: {
            c.name as campaign_name,
            p.name as preset_name,
            coalesce(
-             json_agg(json_build_object('id', a.id, 'url', a.url, 'idx', a.idx)
+             json_agg(json_build_object('id', a.id, 'url', a.url, 'idx', a.idx, 'mirror_url', a.mirror_url)
                       order by a.idx)
              filter (where a.id is not null), '[]'
            ) as assets
@@ -215,7 +215,7 @@ export async function getGeneration(id: string) {
            c.name as campaign_name,
            p.name as preset_name,
            coalesce(
-             json_agg(json_build_object('id', a.id, 'url', a.url, 'idx', a.idx)
+             json_agg(json_build_object('id', a.id, 'url', a.url, 'idx', a.idx, 'mirror_url', a.mirror_url)
                       order by a.idx)
              filter (where a.id is not null), '[]'
            ) as assets
@@ -246,7 +246,7 @@ export async function getLineage(id: string) {
     )
     select g.*,
            coalesce(
-             json_agg(json_build_object('id', a.id, 'url', a.url, 'idx', a.idx)
+             json_agg(json_build_object('id', a.id, 'url', a.url, 'idx', a.idx, 'mirror_url', a.mirror_url)
                       order by a.idx)
              filter (where a.id is not null), '[]'
            ) as assets
@@ -346,6 +346,15 @@ export async function applyTaskResult(
       `;
     }
   });
+}
+
+export async function setAssetMirror(assetId: string, mirrorUrl: string) {
+  const sql = requireDb();
+  await sql`
+    update generation_assets
+    set mirror_url = ${mirrorUrl}, mirrored_at = now()
+    where id = ${assetId}
+  `;
 }
 
 export async function findByTaskId(taskId: string) {

@@ -25,7 +25,7 @@ export async function GET() {
         review: g.review,
         credits: Number(g.credits_consumed),
         failMsg: g.fail_msg,
-        assets: g.assets.map((a) => a.url),
+        assets: g.assets.map((a) => a.mirror_url ?? a.url),
       })),
     });
   } catch (err) {

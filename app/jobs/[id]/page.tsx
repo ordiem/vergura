@@ -75,14 +75,14 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                 {gen.assets.map((a) => (
                   <a
                     key={a.id}
-                    href={a.url}
+                    href={a.mirror_url ?? a.url}
                     target="_blank"
                     rel="noreferrer"
                     className="group overflow-hidden rounded-lg border border-line"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={a.url}
+                      src={a.mirror_url ?? a.url}
                       alt={`Generated asset ${a.idx + 1}`}
                       className="aspect-square w-full bg-base object-cover"
                     />
@@ -115,7 +115,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                       {v.assets[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={v.assets[0].url}
+                          src={v.assets[0].mirror_url ?? v.assets[0].url}
                           alt=""
                           className="h-full w-full object-cover"
                         />

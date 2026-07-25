@@ -19,7 +19,7 @@ export function EnvBanner() {
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-5 py-2">
         <span className="chip border-[rgba(251,191,36,0.4)] text-run">Setup</span>
         <p className="text-[0.8rem] text-muted">
-          {notes.join(" · ")}. See <code className="font-mono text-fg">README.md</code>.
+          {notes.join(" · ")}. <a href="/setup" className="text-fg underline">Open setup →</a>
         </p>
       </div>
     </div>

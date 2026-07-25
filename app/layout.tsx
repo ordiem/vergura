@@ -19,6 +19,7 @@ const NAV = [
   { href: "/library", label: "Library" },
   { href: "/presets", label: "Presets" },
   { href: "/campaigns", label: "Campaigns" },
+  { href: "/setup", label: "Setup" },
 ];
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
