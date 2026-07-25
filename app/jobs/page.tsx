@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import Link from "next/link";
 import { isDbConfigured } from "@/lib/db/client";
 import { listGenerations, type JobState, type ReviewStatus } from "@/lib/db/queries";
@@ -20,6 +21,7 @@ export default async function JobsPage({
 }: {
   searchParams: Promise<{ review?: string; state?: string }>;
 }) {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
   const sp = await searchParams;
 

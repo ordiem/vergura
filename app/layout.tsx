@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { EnvBanner } from "@/components/EnvBanner";
+import { isAuthConfigured } from "@/lib/auth";
+import { logoutAction } from "@/lib/auth-actions";
 
 export const metadata: Metadata = {
   title: {
@@ -47,6 +49,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   </Link>
                 ))}
               </nav>
+              {isAuthConfigured() ? (
+                <form action={logoutAction} className="ml-auto">
+                  <button type="submit" className="text-xs text-faint hover:text-fg">
+                    Sign out
+                  </button>
+                </form>
+              ) : null}
             </div>
           </header>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { isKieConfigured, isMockDriver } from "@/lib/kie/client";
 import { isAnalysisConfigured, isAnalysisMock, analysisModelName } from "@/lib/analysis/provider";
@@ -16,7 +17,8 @@ type Check = {
   how: string;
 };
 
-export default function SetupPage() {
+export default async function SetupPage() {
+  await requireSession();
   const checks: Check[] = [
     {
       key: "DATABASE_URL",

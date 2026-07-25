@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { isAnalysisMock } from "@/lib/analysis/provider";
 import { listProducts, listRefs, listRips } from "@/lib/db/rip-queries";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Rip" };
 export const dynamic = "force-dynamic";
 
 export default async function RipPage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const [refs, products, rips] = await Promise.all([listRefs(), listProducts(), listRips()]);

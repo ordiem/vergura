@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import Link from "next/link";
 import { isDbConfigured } from "@/lib/db/client";
 import { listCampaigns } from "@/lib/db/queries";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Campaigns" };
 export const dynamic = "force-dynamic";
 
 export default async function CampaignsPage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const campaigns = await listCampaigns();

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { listCampaigns, listPresets } from "@/lib/db/queries";
 import { SetupNotice } from "@/components/SetupNotice";
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: "Generate" };
 export const dynamic = "force-dynamic";
 
 export default async function GeneratePage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const [presets, campaigns] = await Promise.all([listPresets(), listCampaigns()]);

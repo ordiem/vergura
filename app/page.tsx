@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { dashboardStats, listCampaigns, listGenerations } from "@/lib/db/queries";
 import { SetupNotice } from "@/components/SetupNotice";
@@ -7,6 +8,7 @@ import { ReviewBadge, Stat, StateBadge } from "@/components/Badges";
 export const dynamic = "force-dynamic";
 
 export default async function OverviewPage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const [stats, campaigns, recent] = await Promise.all([

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { listGenerations } from "@/lib/db/queries";
 import { listBatches } from "@/lib/db/rip-queries";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Batches" };
 export const dynamic = "force-dynamic";
 
 export default async function BatchesPage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const [approved, batches] = await Promise.all([

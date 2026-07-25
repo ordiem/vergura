@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isDbConfigured } from "@/lib/db/client";
@@ -12,6 +13,7 @@ export const metadata: Metadata = { title: "Job" };
 export const dynamic = "force-dynamic";
 
 export default async function JobPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
   const { id } = await params;
 

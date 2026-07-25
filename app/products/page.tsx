@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { listPresets } from "@/lib/db/queries";
 import { listProducts } from "@/lib/db/rip-queries";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Products" };
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const [products, presets] = await Promise.all([listProducts(), listPresets()]);

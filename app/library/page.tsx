@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireSession } from "@/lib/auth-actions";
 import Link from "next/link";
 import { isDbConfigured } from "@/lib/db/client";
 import { listGenerations } from "@/lib/db/queries";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 /** Approved assets only — the controlled output of the whole pipeline. */
 export default async function LibraryPage() {
+  await requireSession();
   if (!isDbConfigured()) return <SetupNotice />;
 
   const approved = await listGenerations({ review: "approved", limit: 200 });
