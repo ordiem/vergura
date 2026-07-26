@@ -22,6 +22,12 @@ export type ModelDef = {
   kind: "image";
   /** Legacy models use a bespoke endpoint instead of /jobs/createTask. */
   transport: "jobs";
+  /**
+   * Which declared field carries reference images. Undefined means the model is
+   * text-only and cannot be shown a product — compose() refuses rather than
+   * rendering an invented stand-in.
+   */
+  refImageKey?: string;
   fields: FieldDef[];
   estCredits: number;
   docs: string;
@@ -65,6 +71,7 @@ export const IMAGE_MODELS: ModelDef[] = [
     label: "Google Nano Banana 2",
     kind: "image",
     transport: "jobs",
+    refImageKey: "image_input",
     // Measured live: one 1K image consumed 8.0 credits.
     estCredits: 8,
     docs: "https://docs.kie.ai/market/google/nanobanana2",
@@ -93,6 +100,7 @@ export const IMAGE_MODELS: ModelDef[] = [
     label: "Grok Imagine — Image to Image",
     kind: "image",
     transport: "jobs",
+    refImageKey: "image_urls",
     estCredits: 1,
     docs: "https://docs.kie.ai/market/grok-imagine/image-to-image",
     fields: [

@@ -15,16 +15,23 @@ export class ComposeError extends Error {}
  * Merges an operator's request with a brand preset.
  *
  * Precedence, strongest last:
- *   model defaults  ->  operator params (only if whitelisted)  ->  locked_params
+ *   model defaults  ->  reference images  ->  operator params (only if
+ *   whitelisted)  ->  locked_params
  *
  * The preset's model always wins; an operator cannot switch models. When no
  * preset is attached the operator has full control of the declared fields.
+ *
+ * `referenceImages` is the product's own photography. It sits outside the
+ * editable-params whitelist on purpose: it is not a stylistic choice an
+ * operator may or may not be trusted with, it is what makes the render depict
+ * the real product instead of an invented lookalike.
  */
 export function compose(args: {
   preset: BrandPreset | null;
   modelSlug: string;
   operatorPrompt: string;
   operatorParams: Record<string, unknown>;
+  referenceImages?: string[];
 }): ComposeResult {
   const slug = args.preset?.model ?? args.modelSlug;
   const model = modelBySlug(slug);
@@ -73,7 +80,23 @@ export function compose(args: {
     operatorClean[k] = v;
   }
 
+  // 3. Reference images — the product itself.
+  const refs = dedupe((args.referenceImages ?? []).filter((u) => /^https?:\/\//.test(u)));
+  const refInput: Record<string, unknown> = {};
+  if (refs.length) {
+    if (!model.refImageKey) {
+      throw new ComposeError(
+        `${model.label} takes no reference images, so this product cannot appear in the render. ` +
+          `Choose a model with a reference-image input.`
+      );
+    }
+    const field = model.fields.find((f) => f.key === model.refImageKey);
+    const cap = field?.type === "urls" && field.max ? field.max : refs.length;
+    refInput[model.refImageKey] = refs.slice(0, cap);
+  }
+
   const merged: Record<string, unknown> = {
+    ...refInput,
     ...operatorClean,
     ...(preset?.locked_params ?? {}),
     prompt: resolvedPrompt,
@@ -84,6 +107,8 @@ export function compose(args: {
 
   return { model, resolvedPrompt, input, rejectedKeys };
 }
+
+const dedupe = (xs: string[]) => [...new Set(xs)];
 
 /** Form values arrive as strings; the API is typed. */
 function coerce(model: ModelDef, input: Record<string, unknown>) {

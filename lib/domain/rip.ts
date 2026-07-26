@@ -73,11 +73,35 @@ export async function runRip(args: {
 }
 
 /**
+ * Anchors the render to the real product.
+ *
+ * Without this the model reads the concept as a description and invents a
+ * plausible-looking product to fill the hero slot — the reference photos are
+ * the difference between an ad for your product and an ad for something that
+ * resembles it.
+ */
+function productAnchor(name: string, refCount: number) {
+  if (refCount === 0) return "";
+  const noun = refCount === 1 ? "The attached reference image shows" : `The ${refCount} attached reference images show`;
+  return [
+    `${noun} the actual product: ${name}.`,
+    "Render that exact product as the hero — same shape, proportions, materials,",
+    "packaging, label artwork and brand colours as the reference. Do not redesign",
+    "it, restyle its packaging, or substitute a lookalike.",
+    "Apply the scene, palette, lighting and composition described above around it.",
+    "The only legible text may be what already exists on the product itself; add",
+    "no headlines, captions, logos or lettering of your own.",
+  ].join(" ");
+}
+
+/**
  * Approves a concept and submits it for generation.
  *
  * The concept's visual prompt becomes the operator prompt, so the product's
  * brand preset still applies its locked segments on top — a concept cannot
- * escape brand control just because a model wrote it.
+ * escape brand control just because a model wrote it. The product's own
+ * photography rides along as reference images so the scene is built around the
+ * real thing.
  */
 export async function generateFromConcept(args: {
   conceptId: string;
@@ -94,13 +118,19 @@ export async function generateFromConcept(args: {
 
   const rip = await import("@/lib/db/rip-queries").then((m) => m.getRip(concept.rip_id));
   const product = rip?.product_id ? await getProduct(rip.product_id) : null;
+  const referenceImages = (product?.images ?? []).map((i) => i.url);
+
+  const operatorPrompt = [concept.visual_prompt.trim(), productAnchor(product?.name ?? "", referenceImages.length)]
+    .filter(Boolean)
+    .join("\n\n");
 
   const res = await submitGeneration({
     campaignId: args.campaignId ?? rip?.campaign_id ?? null,
     presetId: product?.preset_id ?? null,
     modelSlug: "nano-banana-2",
-    operatorPrompt: concept.visual_prompt,
+    operatorPrompt,
     operatorParams: {},
+    referenceImages,
   });
 
   await setConceptStatus(args.conceptId, "generated");

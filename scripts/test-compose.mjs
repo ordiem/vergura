@@ -97,6 +97,88 @@ test("without a preset every declared field is operator-controlled", () => {
   assert.deepEqual(r.rejectedKeys, []);
 });
 
+console.log("\ncompose — product reference images");
+
+const REF_A = "https://cdn.example.com/product-a.jpg";
+const REF_B = "https://cdn.example.com/product-b.jpg";
+
+test("product images land on the model's reference field", () => {
+  const r = compose({
+    preset: null,
+    modelSlug: "nano-banana-2",
+    operatorPrompt: "the product on a stone plinth",
+    operatorParams: {},
+    referenceImages: [REF_A, REF_B],
+  });
+  assert.deepEqual(r.input.image_input, [REF_A, REF_B]);
+});
+
+test("reference images survive a preset that whitelists nothing", () => {
+  // The whole point: product identity is not an operator preference, so the
+  // editable_params gate must not be able to strip it.
+  const r = compose({
+    preset: { ...preset, model: "nano-banana-2", locked_params: {}, editable_params: [] },
+    modelSlug: "",
+    operatorPrompt: "the product on a stone plinth",
+    operatorParams: { seed: "9" },
+    referenceImages: [REF_A],
+  });
+  assert.deepEqual(r.input.image_input, [REF_A]);
+  assert.deepEqual(r.rejectedKeys, ["seed"]);
+});
+
+test("a locked reference list still outranks the product's own images", () => {
+  const r = compose({
+    preset: {
+      ...preset,
+      model: "nano-banana-2",
+      locked_params: { image_input: ["https://cdn.example.com/locked.jpg"] },
+      editable_params: [],
+    },
+    modelSlug: "",
+    operatorPrompt: "the product on a stone plinth",
+    operatorParams: {},
+    referenceImages: [REF_A],
+  });
+  assert.deepEqual(r.input.image_input, ["https://cdn.example.com/locked.jpg"]);
+});
+
+test("duplicates and non-http entries are dropped", () => {
+  const r = compose({
+    preset: null,
+    modelSlug: "nano-banana-2",
+    operatorPrompt: "the product on a stone plinth",
+    operatorParams: {},
+    referenceImages: [REF_A, REF_A, "not-a-url", ""],
+  });
+  assert.deepEqual(r.input.image_input, [REF_A]);
+});
+
+test("a text-only model refuses product images instead of inventing one", () => {
+  assert.throws(
+    () =>
+      compose({
+        preset: null,
+        modelSlug: "bytedance/seedream-v4-text-to-image",
+        operatorPrompt: "the product on a stone plinth",
+        operatorParams: {},
+        referenceImages: [REF_A],
+      }),
+    ComposeError
+  );
+});
+
+test("no product images is not an error", () => {
+  const r = compose({
+    preset: null,
+    modelSlug: "nano-banana-2",
+    operatorPrompt: "an empty stone plinth",
+    operatorParams: {},
+    referenceImages: [],
+  });
+  assert.equal(r.input.image_input, undefined);
+});
+
 console.log("\ncompose — validation");
 
 test("empty prompt is rejected", () => {

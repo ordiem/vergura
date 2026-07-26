@@ -35,6 +35,7 @@ export async function submitGeneration(args: {
   modelSlug: string;
   operatorPrompt: string;
   operatorParams: Record<string, unknown>;
+  referenceImages?: string[];
   parentId?: string | null;
   version?: number;
 }) {
@@ -46,6 +47,7 @@ export async function submitGeneration(args: {
     modelSlug: args.modelSlug,
     operatorPrompt: args.operatorPrompt,
     operatorParams: args.operatorParams,
+    referenceImages: args.referenceImages,
   });
 
   const est = estimateCredits(composed.model, composed.input);
