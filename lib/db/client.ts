@@ -1,6 +1,5 @@
 import "server-only";
 import postgres from "postgres";
-import { neon } from "@neondatabase/serverless";
 
 declare global {
   var __vergura_sql: ReturnType<typeof postgres> | undefined;
@@ -14,13 +13,12 @@ export function db() {
   const url = process.env.DATABASE_URL;
   if (!url) return null;
   // Reuse across hot reloads in dev to avoid exhausting connections.
-  // Neon over HTTP: works where outbound TCP 5432 is blocked (sandboxes, some
-  // CI) and is the better fit for serverless, where a per-request connection
-  // is wasted anyway. postgres.js elsewhere.
-  if (/\.neon\.tech/.test(url) && process.env.DB_DRIVER !== "tcp") {
-    globalThis.__vergura_sql ??= neon(url) as unknown as ReturnType<typeof postgres>;
-    return globalThis.__vergura_sql;
-  }
+  // postgres.js only. Neon's HTTP driver was tried here and reverted: it does
+  // not implement postgres.js's dynamic helpers -- sql({...}) inserts,
+  // conditional sql`` fragments, sql.begin() transactions -- all of which the
+  // query layer depends on. Reads still worked, so every page rendered while
+  // every write silently failed. Do not reintroduce it without rewriting
+  // lib/db/queries.ts and lib/db/rip-queries.ts to plain parameterised SQL.
   globalThis.__vergura_sql ??= postgres(url, {
     max: 10,
     idle_timeout: 20,
