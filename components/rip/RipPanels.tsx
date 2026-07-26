@@ -332,6 +332,11 @@ export function RipResult({ rip }: { rip: Rip }) {
           {rip.ref_label || "reference"} → {rip.product_name || "product"}
         </span>
         <span className="chip text-faint">{rip.concepts.length} concepts</span>
+        {rip.model === "mock" ? (
+          <span className="chip border-[rgba(251,191,36,0.4)] text-run">placeholder · not written by a model</span>
+        ) : rip.model ? (
+          <span className="chip text-faint">{rip.model}</span>
+        ) : null}
         <form action={action} className="ml-auto">
           <input type="hidden" name="id" value={rip.id} />
           <button

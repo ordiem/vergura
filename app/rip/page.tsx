@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireSession } from "@/lib/auth-actions";
 import { isDbConfigured } from "@/lib/db/client";
 import { isAnalysisMock } from "@/lib/analysis/provider";
@@ -23,9 +24,26 @@ export default async function RipPage() {
         <p className="mt-1.5 max-w-2xl text-sm text-muted">
           Upload an ad that works, read why it works, then translate that idea onto one of your
           products. Concepts are proposals — nothing generates until you approve one.
-          {isAnalysisMock() ? " Currently using the mock analysis driver." : ""}
         </p>
       </header>
+
+      {isAnalysisMock() ? (
+        <div className="panel border-[rgba(251,191,36,0.4)] p-4">
+          <div className="label text-run">Mock analysis driver</div>
+          <p className="mt-2 max-w-2xl text-sm text-muted">
+            No model is reading your reference or writing these concepts. Every analysis and every
+            concept below is a fixed placeholder about a sleep supplement — identical regardless of
+            what you upload or which product you pick. Judge the workflow by them, never the
+            creative.
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            Set <code className="font-mono text-fg">ANTHROPIC_API_KEY</code> to switch to Claude —{" "}
+            <Link href="/setup" className="text-accent">
+              setup →
+            </Link>
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[22rem_1fr]">
         <div className="space-y-4">
