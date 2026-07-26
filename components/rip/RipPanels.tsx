@@ -8,6 +8,7 @@ import {
   analyseRefAction,
   conceptReviewAction,
   createRefAction,
+  deleteRipAction,
   runRipAction,
 } from "@/lib/rip-actions";
 import type { Concept, Product, Ref, Rip } from "@/lib/db/rip-queries";
@@ -92,6 +93,18 @@ export function RefCard({ r }: { r: Ref }) {
             <ul className="list-disc space-y-0.5 pl-4">
               {a.why_it_works?.map((w, i) => <li key={i}>{w}</li>)}
             </ul>
+            {a.palette?.length ? (
+              <p>
+                <span className="text-faint">Palette: </span>
+                {a.palette.join(" · ")}
+              </p>
+            ) : null}
+            {a.lighting ? (
+              <p>
+                <span className="text-faint">Light: </span>
+                {a.lighting}
+              </p>
+            ) : null}
             {a.detected_text?.length ? (
               <p className="font-mono text-[0.7rem] text-faint">
                 Text read: {a.detected_text.join(" · ")}
@@ -234,7 +247,9 @@ export function ConceptCard({ c, campaignId }: { c: Concept; campaignId: string 
           className="field mt-1.5 font-mono text-xs"
         />
         <p className="mt-1 text-xs text-faint">
-          Imagery only. The product&apos;s brand preset still applies its locked segments on top.
+          Imagery only. On generate, the product&apos;s photos are attached as references and an
+          instruction to render that exact product is appended — then the brand preset applies its
+          locked segments on top. The full text sent is on the job page.
         </p>
       </div>
 
@@ -275,6 +290,25 @@ export function ConceptCard({ c, campaignId }: { c: Concept; campaignId: string 
         >
           Reject
         </button>
+        <button
+          type="submit"
+          name="action"
+          value="delete"
+          disabled={pending || c.status === "generated"}
+          onClick={(e) => {
+            if (!confirm("Delete this concept? Reject keeps it on the record; delete does not.")) {
+              e.preventDefault();
+            }
+          }}
+          className="btn btn-bad ml-auto"
+          title={
+            c.status === "generated"
+              ? "Generated concepts stay — the job would lose its origin."
+              : "Remove this proposal entirely"
+          }
+        >
+          Delete
+        </button>
       </div>
 
       <Msg s={state} />
@@ -288,19 +322,45 @@ export function ConceptCard({ c, campaignId }: { c: Concept; campaignId: string 
 }
 
 export function RipResult({ rip }: { rip: Rip }) {
+  const [state, action, pending] = useActionState(deleteRipAction, INIT);
+  const locked = rip.concepts.some((c) => c.status === "generated");
+
   return (
     <section className="space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="label">
           {rip.ref_label || "reference"} → {rip.product_name || "product"}
         </span>
         <span className="chip text-faint">{rip.concepts.length} concepts</span>
+        <form action={action} className="ml-auto">
+          <input type="hidden" name="id" value={rip.id} />
+          <button
+            type="submit"
+            disabled={pending || locked}
+            onClick={(e) => {
+              if (!confirm(`Delete this whole run and its ${rip.concepts.length} concepts?`)) {
+                e.preventDefault();
+              }
+            }}
+            className="btn btn-bad"
+            title={locked ? "A concept here generated — the run stays on the record." : undefined}
+          >
+            {pending ? "Deleting…" : "Delete run"}
+          </button>
+        </form>
       </div>
-      <div className="grid gap-3 lg:grid-cols-2">
-        {rip.concepts.map((c) => (
-          <ConceptCard key={c.id} c={c} campaignId={rip.campaign_id} />
-        ))}
-      </div>
+      <Msg s={state} />
+      {rip.concepts.length === 0 ? (
+        <p className="panel p-4 text-sm text-muted">
+          Every concept in this run was deleted. Delete the run to clear it.
+        </p>
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-2">
+          {rip.concepts.map((c) => (
+            <ConceptCard key={c.id} c={c} campaignId={rip.campaign_id} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

@@ -7,6 +7,8 @@ import {
   createBatch,
   createProduct,
   createRef,
+  deleteConcept,
+  deleteRip,
   setConceptStatus,
   updateConceptPrompt,
 } from "@/lib/db/rip-queries";
@@ -87,6 +89,18 @@ export async function conceptReviewAction(_p: ActionState, form: FormData): Prom
     const id = String(form.get("id") ?? "");
     const action = String(form.get("action") ?? "");
 
+    // Before the prompt write — there is no point saving an edit to a row we
+    // are about to remove.
+    if (action === "delete") {
+      const outcome = await deleteConcept(id);
+      revalidatePath("/rip");
+      if (outcome === "generated") {
+        return fail("Already generated — reject it instead so the job keeps its origin.");
+      }
+      if (outcome === "missing") return fail("That concept is already gone.");
+      return { ok: true, message: "Concept deleted." };
+    }
+
     const prompt = String(form.get("visual_prompt") ?? "").trim();
     if (prompt) await updateConceptPrompt(id, prompt);
 
@@ -118,6 +132,20 @@ export async function conceptReviewAction(_p: ActionState, form: FormData): Prom
     }
 
     return fail("Unknown action.");
+  } catch (err) {
+    return fail(toMessage(err));
+  }
+}
+
+export async function deleteRipAction(_p: ActionState, form: FormData): Promise<ActionState> {
+  try {
+    const outcome = await deleteRip(String(form.get("id") ?? ""));
+    revalidatePath("/rip");
+    if (outcome === "generated") {
+      return fail("This run has a generated concept — it stays on the record.");
+    }
+    if (outcome === "missing") return fail("That rip is already gone.");
+    return { ok: true, message: "Rip deleted." };
   } catch (err) {
     return fail(toMessage(err));
   }
