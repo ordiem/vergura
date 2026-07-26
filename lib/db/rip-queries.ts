@@ -243,6 +243,54 @@ export async function updateConceptPrompt(id: string, visualPrompt: string) {
   `;
 }
 
+export type DeleteOutcome = "deleted" | "generated" | "missing";
+
+/**
+ * Discards a proposal outright — for concepts that are noise, not for ones you
+ * disagree with (reject keeps those on the record).
+ *
+ * A concept that already generated is not deletable: generations.concept_id is
+ * `on delete set null`, so removing it would leave a job in the ledger with no
+ * trace of what authorised it. The guard lives in the WHERE clause so a
+ * generate landing between the check and the delete cannot slip through.
+ */
+export async function deleteConcept(id: string): Promise<DeleteOutcome> {
+  const sql = requireDb();
+  const [row] = await sql`
+    delete from concepts c
+    where c.id = ${id}
+      and c.status <> 'generated'
+      and not exists (select 1 from generations g where g.concept_id = c.id)
+    returning c.id
+  `;
+  if (row) return "deleted";
+  const [survivor] = await sql`select id from concepts where id = ${id}`;
+  return survivor ? "generated" : "missing";
+}
+
+/**
+ * Drops a whole rip run and its concepts (cascade), for when none of the
+ * proposals are worth keeping. Blocked by the same rule: if any concept in the
+ * run generated, the run is part of the audit trail and stays.
+ */
+export async function deleteRip(id: string): Promise<DeleteOutcome> {
+  const sql = requireDb();
+  const [row] = await sql`
+    delete from rips r
+    where r.id = ${id}
+      and not exists (
+        select 1 from concepts c
+        where c.rip_id = r.id
+          and (c.status = 'generated'
+               or exists (select 1 from generations g where g.concept_id = c.id))
+      )
+    returning r.id
+  `;
+  if (row) return "deleted";
+  const [survivor] = await sql`select id from rips where id = ${id}`;
+  return survivor ? "generated" : "missing";
+}
+
 /* ----------------------------- batches ----------------------------- */
 
 export type Batch = {
