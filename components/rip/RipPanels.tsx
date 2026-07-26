@@ -8,6 +8,7 @@ import {
   analyseRefAction,
   conceptReviewAction,
   createRefAction,
+  deleteRefAction,
   deleteRipAction,
   runRipAction,
 } from "@/lib/rip-actions";
@@ -46,6 +47,7 @@ export function AddReference() {
 
 export function RefCard({ r }: { r: Ref }) {
   const [state, action, pending] = useActionState(analyseRefAction, INIT);
+  const [delState, delAction, deleting] = useActionState(deleteRefAction, INIT);
   const a = r.analysis;
 
   return (
@@ -65,6 +67,19 @@ export function RefCard({ r }: { r: Ref }) {
             ) : (
               <span className="chip text-faint">not analysed</span>
             )}
+            <form action={delAction} className="ml-auto">
+              <input type="hidden" name="id" value={r.id} />
+              <button
+                type="submit"
+                disabled={deleting}
+                onClick={(e) => {
+                  if (!confirm("Delete this reference?")) e.preventDefault();
+                }}
+                className="btn btn-bad"
+              >
+                {deleting ? "…" : "Delete"}
+              </button>
+            </form>
           </div>
           {a ? (
             <p className="mt-1 line-clamp-2 text-xs text-muted">{a.big_idea}</p>
@@ -78,6 +93,7 @@ export function RefCard({ r }: { r: Ref }) {
           )}
           {r.fail_msg ? <p className="mt-1 text-xs text-bad">{r.fail_msg}</p> : null}
           <Msg s={state} />
+          <Msg s={delState} />
         </div>
       </div>
 

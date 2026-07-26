@@ -8,6 +8,7 @@ import {
   createProduct,
   createRef,
   deleteConcept,
+  deleteRef,
   deleteRip,
   setConceptStatus,
   updateConceptPrompt,
@@ -39,6 +40,20 @@ export async function analyseRefAction(_p: ActionState, form: FormData): Promise
     await analyseRef(String(form.get("id") ?? ""));
     revalidatePath("/rip");
     return { ok: true, message: "Analysed." };
+  } catch (err) {
+    return fail(toMessage(err));
+  }
+}
+
+export async function deleteRefAction(_p: ActionState, form: FormData): Promise<ActionState> {
+  try {
+    const outcome = await deleteRef(String(form.get("id") ?? ""));
+    revalidatePath("/rip");
+    if (outcome === "generated") {
+      return fail("A run from this reference has generated — it stays on the record.");
+    }
+    if (outcome === "missing") return fail("That reference is already gone.");
+    return { ok: true, message: "Reference deleted." };
   } catch (err) {
     return fail(toMessage(err));
   }

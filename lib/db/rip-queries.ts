@@ -80,6 +80,29 @@ export async function getRef(id: string) {
   return (row ?? null) as Ref | null;
 }
 
+/**
+ * Removes a reference. rips.ref_id is `on delete set null`, so any run made
+ * from it survives with its concepts intact but loses the thumbnail — fine for
+ * clearing duplicate uploads, not fine once a run produced real work, so the
+ * same generated-concept rule applies.
+ */
+export async function deleteRef(id: string): Promise<DeleteOutcome> {
+  const sql = requireDb();
+  const [row] = await sql`
+    delete from refs f
+    where f.id = ${id}
+      and not exists (
+        select 1 from rips r
+        join concepts c on c.rip_id = r.id
+        where r.ref_id = f.id and c.status = 'generated'
+      )
+    returning f.id
+  `;
+  if (row) return "deleted";
+  const [survivor] = await sql`select id from refs where id = ${id}`;
+  return survivor ? "generated" : "missing";
+}
+
 export async function saveAnalysis(id: string, analysis: AnalysisResult, model: string) {
   const sql = requireDb();
   await sql`

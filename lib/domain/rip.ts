@@ -80,7 +80,7 @@ export async function runRip(args: {
  * the difference between an ad for your product and an ad for something that
  * resembles it.
  */
-function productAnchor(name: string, refCount: number) {
+export function productAnchor(name: string, refCount: number) {
   if (refCount === 0) return "";
   const noun = refCount === 1 ? "The attached reference image shows" : `The ${refCount} attached reference images show`;
   return [
