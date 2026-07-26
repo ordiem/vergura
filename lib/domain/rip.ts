@@ -73,25 +73,49 @@ export async function runRip(args: {
 }
 
 /**
- * Anchors the render to the real product.
+ * Assembles what the image model actually receives.
  *
- * Without this the model reads the concept as a description and invents a
- * plausible-looking product to fill the hero slot — the reference photos are
- * the difference between an ad for your product and an ad for something that
- * resembles it.
+ * Two failures to prevent, and they pull in opposite directions.
+ *
+ * With no reference photos the model invents a plausible-looking product to
+ * fill the hero slot, and the ad sells something that merely resembles yours.
+ *
+ * With reference photos and no framing, it does the opposite: it treats the
+ * packshot as the shot to adjust and hands back that same photograph with
+ * props added — one unit, same crop, same background — silently discarding the
+ * concept's composition. That is fatal when the mechanic depends on staging,
+ * which for offer ads it usually does: a bundle you cannot count is not a
+ * bundle. Observed live, so the role of the photos is stated before the scene
+ * rather than after it, and copying their layout is ruled out explicitly.
  */
-export function productAnchor(name: string, refCount: number) {
-  if (refCount === 0) return "";
-  const noun = refCount === 1 ? "The attached reference image shows" : `The ${refCount} attached reference images show`;
+export function buildRenderPrompt(args: {
+  visualPrompt: string;
+  productName: string;
+  refCount: number;
+}) {
+  const scene = args.visualPrompt.trim();
+  if (args.refCount === 0) return scene;
+
+  const noun =
+    args.refCount === 1
+      ? "The attached photograph is a product reference"
+      : `The ${args.refCount} attached photographs are product references`;
+
   return [
-    `${noun} the actual product: ${name}.`,
-    "Render that exact product as the hero — same shape, proportions, materials,",
-    "packaging, label artwork and brand colours as the reference. Do not redesign",
-    "it, restyle its packaging, or substitute a lookalike.",
-    "Apply the scene, palette, lighting and composition described above around it.",
-    "The only legible text may be what already exists on the product itself; add",
-    "no headlines, captions, logos or lettering of your own.",
-  ].join(" ");
+    `${noun} for ${args.productName}. They define one thing only: what the ` +
+      "product itself looks like — its shape, proportions, materials, packaging " +
+      "and label artwork. Reproduce those exactly. Never redesign the packaging, " +
+      "restyle the label, or substitute a lookalike.",
+    "They are NOT a layout to imitate. Ignore their framing, camera angle, crop, " +
+      "background, lighting and the number of units they happen to show. Build a " +
+      "new photograph from scratch to the brief below, and follow its staging " +
+      "literally — if it calls for several units, render exactly that many; if it " +
+      "places them at a particular angle or depth, honour it.",
+    `THE PHOTOGRAPH TO BUILD:\n\n${scene}`,
+    "The only legible text anywhere in the frame is the product's own printed " +
+      "packaging, exactly as photographed. Add no headlines, captions, price " +
+      "badges, stickers, logos or lettering of any kind.",
+  ].join("\n\n");
 }
 
 /**
@@ -120,9 +144,11 @@ export async function generateFromConcept(args: {
   const product = rip?.product_id ? await getProduct(rip.product_id) : null;
   const referenceImages = (product?.images ?? []).map((i) => i.url);
 
-  const operatorPrompt = [concept.visual_prompt.trim(), productAnchor(product?.name ?? "", referenceImages.length)]
-    .filter(Boolean)
-    .join("\n\n");
+  const operatorPrompt = buildRenderPrompt({
+    visualPrompt: concept.visual_prompt,
+    productName: product?.name ?? "",
+    refCount: referenceImages.length,
+  });
 
   const res = await submitGeneration({
     campaignId: args.campaignId ?? rip?.campaign_id ?? null,
