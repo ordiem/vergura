@@ -14,7 +14,8 @@
     "db:migrate:http": "node scripts/migrate-http.mjs",
     "test:auth": "node --experimental-strip-types --no-warnings --import ./scripts/alias-register.mjs scripts/test-auth.mjs",
     "test:all": "npm run test && npm run test:auth",
-    "seed:product": "node scripts/seed-product.mjs"
+    "seed:product": "node scripts/seed-product.mjs",
+    "smoke:prod": "node scripts/smoke-prod.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
